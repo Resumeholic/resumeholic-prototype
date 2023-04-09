@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Document Service Test</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script type="text/javascript">
+            function getUpdateAction(form) {
+                console.log("New name: " + $("#udocumentname").val());
+                form.action = "webresources/resumes/" + $("#uresumeid").val();
+            }
+            
+            function getGetAction(form) {
+                form.action = "webresources/resumes/" + $("#gresumeid").val();
+            }
+        </script>
+    </head>
+    <body>
+        
+        <h1>Document Service Test</h1>
+        <form id="create-form" action="webresources/resumes/" method="post">
+            Author ID<input type="text" id="cauthorid" name="authorid">
+            Document Name<input type="text" id="cdocumentname" name="documentname">
+            <button type="submit">Create</button>
+        </form>
+        
+        <form id="update-form" onsubmit="getUpdateAction(this)" action="webresources/resumes/1" method="post">
+            Resume ID<input type="text" id="uresumeid" name="resumeid">
+            Document Name<input type="text" id="udocumentname" name="documentname">
+            <button type="submit">Update</button>
+        </form>
+        <form id="get-form" onsubmit="getGetAction(this)" action="webresources/resumes/1" method="get">
+            Resume ID<input type="text" id="gresumeid">
+            <button type="submit">Get</button>
+        </form>
+        <form id="get-all-form" action="webresources/resumes/" method="get">
+            Author ID<input type="text" id="gaauthorid" name="authorId">
+            <button type="submit">Get All</button>
+        </form>
+    </body>
+</html>

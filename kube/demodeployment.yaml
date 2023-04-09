@@ -1,0 +1,259 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: documentdb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: documentdb
+spec:
+  selector:
+    app: documentdb
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: documentdb
+spec:
+  selector:
+    matchLabels:
+      app: documentdb
+  template:
+    metadata:
+      labels:
+        app: documentdb
+    spec:
+      containers:
+        - name: documentdb
+          image: clameater14/resumeholic-demo:documentdb
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: storage
+              mountPath: /data/documentdb
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: documentdb-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: documentservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: documentservice
+  template:
+    metadata:
+      labels:
+        app: documentservice
+    spec:
+      containers:
+        - name: documentservice
+          image: clameater14/resumeholic-demo:documentservice
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: documentdb:3306
+            - name: KUBEMQ_ADDRESS
+              value: 10.0.9.238:50000
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: personalinfoheaderdb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: personalinfoheaderdb
+spec:
+  selector:
+    app: personalinfoheaderdb
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personalinfoheaderdb
+spec:
+  selector:
+    matchLabels:
+      app: personalinfoheaderdb
+  template:
+    metadata:
+      labels:
+        app: personalinfoheaderdb
+    spec:
+      containers:
+        - name: personalinfoheaderdb
+          image: clameater14/resumeholic-demo:personalinfoheaderdb
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: storage
+              mountPath: /data/personalinfoheaderdb
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: personalinfoheaderdb-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personalinfoheaderservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: personalinfoheaderservice
+  template:
+    metadata:
+      labels:
+        app: personalinfoheaderservice
+    spec:
+      containers:
+        - name: personalinfoheaderservice
+          image: clameater14/resumeholic-demo:personalinfoheaderservice
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: personalinfoheaderdb:3306
+            - name: KUBEMQ_ADDRESS
+              value: 10.0.9.238:50000
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: userdb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userdb
+spec:
+  selector:
+    app: userdb
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userdb
+spec:
+  selector:
+    matchLabels:
+      app: userdb
+  template:
+    metadata:
+      labels:
+        app: userdb
+    spec:
+      containers:
+        - name: userdb
+          image: clameater14/resumeholic-demo:userdb
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: storage
+              mountPath: /data/userdb
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: userdb-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: clameater14/resumeholic-demo:frontend
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DOCUMENT_SERVICE
+              value: documentservice:80
+
+            - name: PERSONAL_INFO_HEADER_SERVICE
+              value: personalinfoheaderservice:80
+              
+            - name: DB_URL
+              value: userdb:3306
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: documentservice
+spec:
+  selector:
+    app: documentservice
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: personalinfoheaderservice
+spec:
+  selector:
+    app: personalinfoheaderservice
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: LoadBalancer

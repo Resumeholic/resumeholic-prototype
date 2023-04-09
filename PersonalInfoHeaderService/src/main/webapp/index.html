@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Personal Info Header Service Test</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script type="text/javascript">
+            function setCreateURL(form) {
+                form.action = "webresources/headers?resumeId=" + $("#cresumeid").val();
+            }
+            function setUpdateURL(form) {
+                form.action = "webresources/headers/update?resumeId=" + $("#uresumeid").val();
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Personal Info Header Service Test</h1>
+        <form id="create-form" onsubmit="setCreateURL(this)" action="webresources/headers/" method="post">
+            Resume ID<input type="text" id="cresumeid">
+            First Name<input type="text" id="cfirstname" name="firstname">
+            Last Name<input type="text" id="clastname" name="lastname">
+            Email<input type="email" id="cemail" name="email">
+            Phone<input type="text" id="cphone" name="phone">
+            <button type="submit">Create</button>
+        </form>
+        <form id="update-form" onsubmit="setUpdateURL(this)" action="webresources/headers/update" method="post">
+            Resume ID<input type="text" id="uresumeid">
+            First Name<input type="text" id="ufirstname" name="firstname">
+            Last Name<input type="text" id="ulastname" name="lastname">
+            Email<input type="email" id="uemail" name="email">
+            Phone<input type="text" id="uphone" name="phone">
+            <button type="submit">Update</button>
+        </form>
+        <form id="get-form" action="webresources/headers" method="get">
+            Resume ID<input type="text" id="gresumeid" name="resumeId">
+            <button type="submit">Get</button>
+        </form>
+    </body>
+</html>

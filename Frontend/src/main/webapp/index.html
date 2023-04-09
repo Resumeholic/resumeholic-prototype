@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Login - Resumeholic</title>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+
+    <body>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <div class="container">
+            <h1 class="center">Resumeholic</h1>
+            <h2 class="center">Demo Version</h2>
+            <div class="container z-depth-2" style="padding: 1rem">
+                <div>
+                    Please use this demo login:
+                    <div>
+                        <p>
+                            Email: andy.marks@gmail.com<br>
+                            Password: 123456
+                        </p>
+                    </div>
+                    
+                </div>
+                <div style="color: red; margin-bottom: 1rem;">
+                    <b>Passwords are saved in plain text. Please do not use this version for real work!</b>
+                </div>
+                
+                <form action="Login" method="post" >
+                    <span>Email <input type="email" name="email"></span>
+                    <span>Password <input type="password" name="password"></span>
+                    <input class="btn" style="display: block; margin-right: 0; margin-left: auto" type="submit" value="Log in" name="login" />
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
