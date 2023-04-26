@@ -1,259 +1,422 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: documentdb-pvc
-spec:
-  accessModes:
+items:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    creationTimestamp: null
+    name: documentdb-pvc
+  spec:
+    accessModes:
     - ReadWriteOnce
-  resources:
-    requests:
-      storage: 256Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: documentdb
-spec:
-  selector:
-    app: documentdb
-  ports:
+    resources:
+      requests:
+        storage: 256Mi
+    volumeMode: Filesystem
+  status:
+    phase: Pending
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: documentdb
+  spec:
+    internalTrafficPolicy: Cluster
+    ports:
     - port: 3306
+      protocol: TCP
       targetPort: 3306
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: documentdb
-spec:
-  selector:
-    matchLabels:
+    selector:
       app: documentdb
-  template:
-    metadata:
-      labels:
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    name: documentdb
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
         app: documentdb
-    spec:
-      containers:
-        - name: documentdb
-          image: clameater14/resumeholic-demo:documentdb
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: documentdb
+      spec:
+        containers:
+        - image: clameater14/resumeholic-demo:documentdb
+          imagePullPolicy: IfNotPresent
+          name: documentdb
           ports:
-            - containerPort: 3306
+          - containerPort: 3306
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
           volumeMounts:
-            - name: storage
-              mountPath: /data/documentdb
-      volumes:
+          - mountPath: /data/documentdb
+            name: storage
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
         - name: storage
           persistentVolumeClaim:
             claimName: documentdb-pvc
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: documentservice
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: documentservice
-  template:
-    metadata:
-      labels:
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    name: documentservice
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
         app: documentservice
-    spec:
-      containers:
-        - name: documentservice
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: documentservice
+      spec:
+        containers:
+        - env:
+          - name: DB_URL
+            value: documentdb:3306
+          - name: KUBEMQ_ADDRESS
+            value: 10.0.9.238:50000
           image: clameater14/resumeholic-demo:documentservice
-          ports:
-            - containerPort: 8080
-          env:
-            - name: DB_URL
-              value: documentdb:3306
-            - name: KUBEMQ_ADDRESS
-              value: 10.0.9.238:50000
           imagePullPolicy: Always
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: personalinfoheaderdb-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 256Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: personalinfoheaderdb
-spec:
-  selector:
-    app: personalinfoheaderdb
-  ports:
-    - port: 3306
-      targetPort: 3306
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: personalinfoheaderdb
-spec:
-  selector:
-    matchLabels:
-      app: personalinfoheaderdb
-  template:
-    metadata:
-      labels:
-        app: personalinfoheaderdb
-    spec:
-      containers:
-        - name: personalinfoheaderdb
-          image: clameater14/resumeholic-demo:personalinfoheaderdb
+          name: documentservice
           ports:
-            - containerPort: 3306
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    creationTimestamp: null
+    name: personalinfoheaderdb-pvc
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 256Mi
+    volumeMode: Filesystem
+  status:
+    phase: Pending
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: personalinfoheaderdb
+  spec:
+    internalTrafficPolicy: Cluster
+    ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
+    selector:
+      app: personalinfoheaderdb
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    name: personalinfoheaderdb
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: personalinfoheaderdb
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: personalinfoheaderdb
+      spec:
+        containers:
+        - image: clameater14/resumeholic-demo:personalinfoheaderdb
+          imagePullPolicy: IfNotPresent
+          name: personalinfoheaderdb
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
           volumeMounts:
-            - name: storage
-              mountPath: /data/personalinfoheaderdb
-      volumes:
+          - mountPath: /data/personalinfoheaderdb
+            name: storage
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
         - name: storage
           persistentVolumeClaim:
             claimName: personalinfoheaderdb-pvc
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: personalinfoheaderservice
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: personalinfoheaderservice
-  template:
-    metadata:
-      labels:
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    name: personalinfoheaderservice
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
         app: personalinfoheaderservice
-    spec:
-      containers:
-        - name: personalinfoheaderservice
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: personalinfoheaderservice
+      spec:
+        containers:
+        - env:
+          - name: DB_URL
+            value: personalinfoheaderdb:3306
+          - name: KUBEMQ_ADDRESS
+            value: 10.0.9.238:50000
           image: clameater14/resumeholic-demo:personalinfoheaderservice
-          ports:
-            - containerPort: 8080
-          env:
-            - name: DB_URL
-              value: personalinfoheaderdb:3306
-            - name: KUBEMQ_ADDRESS
-              value: 10.0.9.238:50000
           imagePullPolicy: Always
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: userdb-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 256Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: userdb
-spec:
-  selector:
-    app: userdb
-  ports:
-    - port: 3306
-      targetPort: 3306
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: userdb
-spec:
-  selector:
-    matchLabels:
-      app: userdb
-  template:
-    metadata:
-      labels:
-        app: userdb
-    spec:
-      containers:
-        - name: userdb
-          image: clameater14/resumeholic-demo:userdb
+          name: personalinfoheaderservice
           ports:
-            - containerPort: 3306
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    creationTimestamp: null
+    name: userdb-pvc
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 256Mi
+    volumeMode: Filesystem
+  status:
+    phase: Pending
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: userdb
+  spec:
+    internalTrafficPolicy: Cluster
+    ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
+    selector:
+      app: userdb
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    name: userdb
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: userdb
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: userdb
+      spec:
+        containers:
+        - image: clameater14/resumeholic-demo:userdb
+          imagePullPolicy: IfNotPresent
+          name: userdb
+          ports:
+          - containerPort: 3306
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
           volumeMounts:
-            - name: storage
-              mountPath: /data/userdb
-      volumes:
+          - mountPath: /data/userdb
+            name: storage
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
         - name: storage
           persistentVolumeClaim:
             claimName: userdb-pvc
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: frontend
-  template:
-    metadata:
-      labels:
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    name: frontend
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
         app: frontend
-    spec:
-      containers:
-        - name: frontend
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: frontend
+      spec:
+        containers:
+        - env:
+          - name: DOCUMENT_SERVICE
+            value: documentservice:80
+          - name: PERSONAL_INFO_HEADER_SERVICE
+            value: personalinfoheaderservice:80
+          - name: DB_URL
+            value: userdb:3306
           image: clameater14/resumeholic-demo:frontend
-          ports:
-            - containerPort: 8080
-          env:
-            - name: DOCUMENT_SERVICE
-              value: documentservice:80
-
-            - name: PERSONAL_INFO_HEADER_SERVICE
-              value: personalinfoheaderservice:80
-              
-            - name: DB_URL
-              value: userdb:3306
           imagePullPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: documentservice
-spec:
-  selector:
-    app: documentservice
-  ports:
+          name: frontend
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: documentservice
+  spec:
+    internalTrafficPolicy: Cluster
+    ports:
     - port: 80
+      protocol: TCP
       targetPort: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: personalinfoheaderservice
-spec:
-  selector:
-    app: personalinfoheaderservice
-  ports:
+    selector:
+      app: documentservice
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: personalinfoheaderservice
+  spec:
+    internalTrafficPolicy: Cluster
+    ports:
     - port: 80
+      protocol: TCP
       targetPort: 8080
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend
-spec:
-  selector:
-    app: frontend
-  ports:
+    selector:
+      app: personalinfoheaderservice
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: frontend
+  spec:
+    allocateLoadBalancerNodePorts: true
+    externalTrafficPolicy: Cluster
+    internalTrafficPolicy: Cluster
+    ports:
     - port: 80
+      protocol: TCP
       targetPort: 8080
-  type: LoadBalancer
+    selector:
+      app: frontend
+    sessionAffinity: None
+    type: LoadBalancer
+  status:
+    loadBalancer: {}
+kind: List
+metadata: {}
